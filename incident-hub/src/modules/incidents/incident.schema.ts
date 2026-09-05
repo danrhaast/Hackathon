@@ -61,10 +61,12 @@ export type IncidentFiltersInput = z.infer<
 export const createCommentSchema = z.object({
     author: z
       .string()
+      .trim()
       .min(1, "Author is required"),
   
     content: z
       .string()
+      .trim()
       .min(1, "Comment content is required"),
   });
   

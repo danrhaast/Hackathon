@@ -61,7 +61,7 @@ export class IncidentRepository {
           status: newStatus,
         },
       });
-
+  
       await transaction.incidentHistory.create({
         data: {
           incidentId: id,
@@ -70,7 +70,7 @@ export class IncidentRepository {
           changedBy,
         },
       });
-
+  
       return incident;
     });
   }

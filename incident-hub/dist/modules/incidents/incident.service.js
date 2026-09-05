@@ -18,7 +18,20 @@ class IncidentService {
         return this.repository.findAll(filters);
     }
     async updateStatus(id, status, changedBy) {
-        // ...
+        const incident = await this.repository.findById(id);
+        if (!incident) {
+            throw new app_errors_1.AppError("Incident not found", 404);
+        }
+        const currentStatus = incident.status;
+        if (currentStatus === "OPEN" &&
+            status === "RESOLVED" &&
+            incident.severity === "CRITICAL") {
+            throw new app_errors_1.AppError("Critical incidents must pass through In Progress before being resolved", 400);
+        }
+        if (currentStatus === status) {
+            throw new app_errors_1.AppError("Incident already has this status", 400);
+        }
+        return this.repository.updateStatus(id, currentStatus, status, changedBy);
     }
     async getDashboard() {
         return this.repository.getDashboard();

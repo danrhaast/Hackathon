@@ -44,9 +44,11 @@ exports.incidentFiltersSchema = zod_1.z.object({
 exports.createCommentSchema = zod_1.z.object({
     author: zod_1.z
         .string()
+        .trim()
         .min(1, "Author is required"),
     content: zod_1.z
         .string()
+        .trim()
         .min(1, "Comment content is required"),
 });
 //# sourceMappingURL=incident.schema.js.map
