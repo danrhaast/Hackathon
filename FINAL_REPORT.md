@@ -1,99 +1,74 @@
-# FINAL_REPORT.md — Incident Hub
+# Incident Hub — Relatório Final
 
 ## 1. Resumo
 
-O Incident Hub é uma API para centralização e acompanhamento de incidentes operacionais.
+O **Incident Hub** é um sistema desenvolvido durante o AI Engineering Hackathon para centralizar o registro, acompanhamento e resolução de incidentes operacionais.
 
-O sistema permite registrar incidentes, acompanhar seus status, aplicar regras de negócio, registrar comentários e consultar uma timeline com todas as atividades realizadas.
+A aplicação permite criar incidentes, controlar status e severidade, visualizar histórico, adicionar comentários, acompanhar uma timeline de atividades e consultar indicadores através de um dashboard.
 
-O desenvolvimento foi realizado com foco no backend, priorizando funcionamento, persistência, rastreabilidade e testes.
-
----
+O sistema foi finalizado e validado com sucesso.
 
 ## 2. Problema
 
-Em uma operação com diferentes incidentes, informações podem ficar espalhadas entre ferramentas e dificultar o acompanhamento dos problemas.
+Incidentes operacionais precisam ser acompanhados de forma organizada para que a equipe consiga entender:
 
-O Incident Hub busca centralizar essas informações e permitir que a equipe acompanhe:
+* qual problema aconteceu
+* qual a gravidade
+* qual o estado atual
+* quais ações foram realizadas
+* quem realizou determinada ação
+* quando cada evento aconteceu
 
-* qual é o problema;
-* qual sua severidade;
-* em qual etapa de tratamento está;
-* quem realizou alterações;
-* quais comentários foram registrados;
-* como o incidente evoluiu ao longo do tempo.
-
----
+O Incident Hub concentra essas informações em uma única aplicação.
 
 ## 3. Solução
 
-Foi desenvolvida uma API REST utilizando:
+Foi desenvolvido um sistema web com:
 
-* Node.js;
-* TypeScript;
-* Express;
-* PostgreSQL;
-* Prisma;
-* Zod.
-
-A aplicação possui uma estrutura separada por responsabilidades:
-
-```text id="6r2mx8"
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
-Prisma
-    ↓
-PostgreSQL
-```
-
-O Controller recebe as requisições, o Service concentra as regras de negócio e o Repository realiza o acesso aos dados.
-
----
+* API REST
+* PostgreSQL
+* Prisma
+* regras de negócio no backend
+* validação de dados
+* frontend web
+* histórico de alterações
+* comentários
+* timeline
+* dashboard
 
 ## 4. Funcionalidades entregues
 
 ### Incidentes
 
-* Criação;
-* listagem;
-* consulta por ID;
-* filtros por status;
-* filtros por severidade;
-* filtros combinados;
-* alteração de status.
+* criação
+* listagem
+* filtros
+* detalhes
+* alteração de status
+* classificação por severidade
 
-### Regras de negócio
+### Regra de Critical
 
 Incidentes críticos não podem ser resolvidos diretamente.
 
 O fluxo obrigatório é:
 
-```text id="z3kz0u"
-OPEN → IN_PROGRESS → RESOLVED
+```text
+OPEN
+ ↓
+IN_PROGRESS
+ ↓
+RESOLVED
 ```
 
 ### Histórico
 
-As alterações de status são persistidas com:
+Toda alteração de status é registrada com:
 
-* status anterior;
-* novo status;
-* responsável;
-* data da alteração.
-
-### Dashboard
-
-O sistema apresenta estatísticas de:
-
-* total de incidentes;
-* incidentes abertos;
-* incidentes em andamento;
-* incidentes resolvidos;
-* quantidade por severidade.
+* status anterior
+* novo status
+* responsável
+* data
 
 ### Comentários
 
@@ -101,185 +76,222 @@ Cada incidente pode possuir vários comentários.
 
 Cada comentário possui:
 
-* autor;
-* conteúdo;
-* data de criação.
+* autor
+* conteúdo
+* data de criação
 
-Comentários vazios ou sem autor são rejeitados.
+Comentários são persistidos no banco de dados.
 
 ### Timeline
 
-A timeline reúne:
+A timeline combina:
 
-* alterações de status;
-* comentários.
+* alterações de status
+* comentários
 
-Os eventos são combinados e apresentados em ordem cronológica.
+Os eventos são organizados cronologicamente.
 
----
+Isso permite acompanhar toda a evolução do incidente em uma única visualização.
+
+### Dashboard
+
+O dashboard apresenta indicadores de:
+
+* total
+* abertos
+* em andamento
+* resolvidos
+* críticos
+* alta severidade
+* média severidade
+* baixa severidade
 
 ## 5. Change Request
 
-O Change Request recebido durante o desenvolvimento adicionou a necessidade de comentários e uma timeline única.
+A Change Request adicionou a necessidade de comentários e uma timeline unificada.
 
-A implementação foi realizada sem substituir o histórico existente.
+A solução adotada foi manter os comentários e o histórico de status em tabelas diferentes.
 
-Foram mantidas duas estruturas:
+A timeline é montada no service combinando os dois tipos de eventos e ordenando-os pela data.
 
-```text id="ojwz8g"
+Essa decisão reduziu a complexidade da estrutura de dados sem perder as informações necessárias.
+
+## 6. Persistência
+
+Os dados são armazenados em PostgreSQL através do Prisma.
+
+Foi validado que:
+
+* incidentes permanecem após reinicialização
+* comentários permanecem após atualização
+* histórico permanece salvo
+* timeline continua disponível após nova consulta
+
+## 7. Testes
+
+Foram implementados testes automatizados utilizando Vitest e Supertest.
+
+Resultado final:
+
+```text
+Test Files  1 passed
+Tests       20 passed
+Failures    0
+```
+
+Foram testados os principais fluxos da aplicação, incluindo a regra especial para incidentes críticos e a nova Change Request.
+
+## 8. Validação manual
+
+Além dos testes automatizados, o sistema foi executado manualmente.
+
+Foram validados:
+
+* dashboard
+* criação de incidentes
+* listagem
+* filtros
+* detalhes
+* alteração de status
+* bloqueio de Critical → Resolved
+* fluxo Critical → In Progress → Resolved
+* comentários
+* timeline
+* persistência
+
+Todos os fluxos principais funcionaram corretamente.
+
+## 9. Execução
+
+O sistema está organizado dentro da pasta `incident_hub`.
+
+Para executar a aplicação, é necessário estar dentro dessa pasta:
+
+```bash
+cd incident_hub
+npm run dev
+```
+
+A aplicação é disponibilizada em:
+
+```text
+http://localhost:3000
+```
+
+Executar `npm run dev` diretamente na raiz `Hackathon` não inicia o sistema, pois o `package.json` e os arquivos da aplicação estão dentro de `incident_hub`.
+
+Esse procedimento está documentado no `START.md`.
+
+## 10. Uso de IA
+
+A IA foi utilizada durante todo o ciclo de desenvolvimento como ferramenta de apoio de engenharia.
+
+Sua utilização ajudou a acelerar:
+
+* análise dos requisitos
+* planejamento
+* arquitetura
+* implementação
+* resolução de erros
+* revisão
+* testes
+* documentação
+
+O uso de IA foi especialmente importante devido ao tempo limitado do hackathon.
+
+A IA permitiu reduzir o tempo gasto em tarefas repetitivas e acelerar a identificação de problemas, permitindo concentrar o esforço na implementação e validação do sistema.
+
+A validação final, execução do sistema e tomada das decisões técnicas permaneceram sob controle do desenvolvimento humano.
+
+## 11. Principais decisões técnicas
+
+### Backend separado por responsabilidades
+
+Foi utilizada a divisão:
+
+```text
+Controller
+Service
+Repository
+```
+
+Isso permite separar HTTP, regras de negócio e acesso aos dados.
+
+### Histórico e comentários separados
+
+Foi decidido não criar uma tabela exclusiva para timeline.
+
+O banco mantém:
+
+```text
 IncidentHistory
 IncidentComment
 ```
 
-A timeline é construída pela aplicação a partir dessas duas fontes.
+A timeline é composta pelo service.
 
-Essa abordagem evita duplicação de informações no banco e mantém cada entidade responsável pelo seu próprio tipo de evento.
+### Validação
 
----
+Zod foi utilizado para validar os dados recebidos pela API.
 
-## 6. Persistência
+### Persistência
 
-Os dados são armazenados em PostgreSQL utilizando Prisma como ORM.
+PostgreSQL foi utilizado para garantir persistência dos dados.
 
-Os principais dados persistidos são:
+## 12. Riscos e limitações
 
-* incidentes;
-* histórico de alterações;
-* comentários.
+O projeto foi desenvolvido dentro do tempo limitado do hackathon.
 
-Os dados permanecem disponíveis após reiniciar a aplicação.
+Por isso, alguns pontos não foram priorizados:
 
-Também foi criado um seed para facilitar a demonstração do sistema.
+* autenticação
+* autorização
+* gerenciamento de usuários
+* notificações
+* paginação
+* deploy em produção
+* recursos avançados de observabilidade
 
----
+Esses pontos podem ser adicionados em uma evolução futura.
 
-## 7. Testes
+## 13. Resultado final
 
-Foram utilizados Vitest e Supertest para testar a API e as principais regras de negócio.
-
-A suíte final possui:
-
-```text id="l4k8g1"
-20 testes
-20 passando
-```
-
-Os testes cobrem:
-
-* Health Check;
-* criação de incidentes;
-* validação;
-* listagem;
-* filtros;
-* alteração de status;
-* regra de incidentes críticos;
-* histórico;
-* dashboard;
-* criação de comentários;
-* validação de comentários;
-* persistência;
-* incidente inexistente;
-* timeline;
-* ordenação cronológica.
-
-Além dos testes automatizados, as principais funcionalidades foram verificadas manualmente utilizando Thunder Client.
-
----
-
-## 8. Validação
-
-A aplicação foi validada através de:
-
-* testes automatizados;
-* testes manuais da API;
-* validação das respostas HTTP;
-* verificação das regras de negócio;
-* verificação da persistência;
-* compilação TypeScript.
-
-O objetivo foi garantir que a implementação do Change Request não quebrasse as funcionalidades existentes.
-
----
-
-## 9. Decisões técnicas
-
-### Backend como prioridade
-
-O desenvolvimento priorizou o funcionamento da aplicação e as regras de negócio em vez de investir tempo excessivo na interface.
-
-### Separação de responsabilidades
-
-Foi utilizada a separação Controller, Service e Repository para facilitar manutenção e organização.
-
-### Timeline sem tabela própria
-
-Não foi criada uma tabela Timeline porque os eventos já possuem suas próprias entidades.
-
-A timeline é uma visão construída pela aplicação.
-
-### Validação com Zod
-
-As entradas da API são validadas antes de serem processadas.
-
-### Transação para alteração de status
-
-A alteração do status e a criação do histórico são realizadas dentro da mesma transação para evitar que o incidente seja atualizado sem o respectivo registro histórico.
-
----
-
-## 10. Riscos identificados
-
-Durante o desenvolvimento foram considerados alguns riscos:
-
-* permitir uma resolução inválida de incidentes críticos;
-* perder o histórico de alterações;
-* permitir comentários vazios;
-* inconsistência entre status e histórico;
-* perda de dados após reinicialização;
-* regressões causadas pelas novas funcionalidades.
-
-Esses pontos foram tratados através das regras implementadas, persistência e testes automatizados.
-
----
-
-## 11. Limitações
-
-O projeto foi desenvolvido dentro do tempo disponível para o hackathon.
-
-Algumas funcionalidades que poderiam ser adicionadas em uma evolução futura:
-
-* autenticação e autorização;
-* usuários reais;
-* paginação;
-* notificações;
-* anexos;
-* métricas mais avançadas;
-* interface web mais completa;
-* auditoria mais detalhada.
-
-Essas funcionalidades não fazem parte do escopo principal entregue.
-
----
-
-## 12. Resultado final
-
-O Incident Hub atende às funcionalidades principais definidas inicialmente e também ao Change Request de comentários e timeline.
+O Incident Hub foi concluído com sucesso.
 
 O sistema possui:
 
-```text id="u1j8h3"
-API REST
-PostgreSQL
-Prisma
-Validação
-Regras de negócio
-Histórico
-Comentários
+```text
+Backend
+   +
+Database
+   +
+Business Rules
+   +
+Frontend
+   +
+Comments
+   +
 Timeline
+   +
 Dashboard
-Seed
-Testes automatizados
-Documentação
+   +
+Tests
+   +
+Documentation
 ```
 
-A implementação foi validada com **20 testes automatizados passando**, além dos testes manuais realizados durante o desenvolvimento.
+O desenvolvimento foi acelerado através do uso estruturado de Inteligência Artificial durante as diferentes etapas do projeto.
+
+Ao final, o sistema estava funcionando sem erros identificados nos fluxos validados e apresentou:
+
+**20 testes automatizados passando de 20 testes executados.**
+
+## 14. Conclusão
+
+O projeto cumpriu o objetivo de criar uma solução funcional para gerenciamento de incidentes operacionais.
+
+Além da implementação das funcionalidades originais, a Change Request foi incorporada sem comprometer as regras existentes.
+
+A utilização de IA como ferramenta de engenharia possibilitou um ciclo de desenvolvimento mais rápido, iterativo e orientado à resolução de problemas, mantendo a validação técnica durante todo o processo.
+
+**Status final: CONCLUÍDO.**

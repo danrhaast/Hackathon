@@ -1,56 +1,39 @@
-# AI_LOG.md — Incident Hub
+# AI_LOG.md
 
-## Objetivo
+## Uso de Inteligência Artificial
 
-Este arquivo registra como utilizei inteligência artificial durante o desenvolvimento do Incident Hub.
+A Inteligência Artificial foi utilizada como ferramenta de apoio durante o desenvolvimento do Incident Hub.
 
-A IA foi utilizada como apoio técnico para análise do problema, planejamento, implementação, revisão e criação de testes.
+O objetivo não foi simplesmente gerar código, mas utilizar IA para acelerar o processo de engenharia, principalmente em análise, planejamento, implementação, revisão, testes e documentação.
 
-As decisões finais e a validação do código foram realizadas durante o desenvolvimento do projeto.
-
----
-
-## Como a IA foi utilizada
+## Onde a IA foi utilizada
 
 ### 1. Análise do problema
 
-Utilizei IA para entender o problema proposto pelo hackathon e transformar os requisitos em funcionalidades menores.
+A IA foi utilizada para interpretar os requisitos do hackathon e transformar o problema em funcionalidades menores e mais fáceis de implementar.
 
-A partir disso, foram definidos:
+Isso ajudou a identificar:
 
-* cadastro de incidentes;
-* consulta e listagem;
-* filtros;
-* fluxo de status;
-* histórico;
-* dashboard;
-* comentários;
-* timeline.
-
----
+* entidades
+* regras de negócio
+* endpoints
+* persistência
+* histórico
+* dashboard
+* Change Request
+* critérios de aceitação
 
 ### 2. Planejamento
 
-A IA foi utilizada para ajudar na organização do desenvolvimento e na definição das prioridades.
+A IA ajudou a estruturar o desenvolvimento e definir uma ordem de implementação.
 
-O foco foi priorizar primeiro:
-
-1. regras de negócio;
-2. persistência;
-3. API;
-4. testes;
-5. funcionalidades do Change Request;
-6. documentação.
-
-A interface visual foi deixada em segundo plano para garantir que o funcionamento principal estivesse pronto dentro do prazo.
-
----
+O projeto foi dividido em partes para evitar desenvolver funcionalidades sem uma base funcional.
 
 ### 3. Arquitetura
 
-A IA foi utilizada como apoio na definição da estrutura do backend.
+Foi utilizada IA para discutir a organização do backend.
 
-Foi adotada uma separação entre:
+A arquitetura escolhida foi:
 
 ```text
 Controller
@@ -59,138 +42,153 @@ Service
     ↓
 Repository
     ↓
-Prisma
-    ↓
-PostgreSQL
+Prisma / PostgreSQL
 ```
 
-Essa divisão facilita a manutenção e deixa as regras de negócio concentradas no Service.
+Essa separação facilitou a implementação das regras de negócio e a manutenção do código.
 
----
+### 4. Implementação
 
-## Change Request — Comentários e Timeline
+A IA foi utilizada como apoio na criação e revisão de:
 
-Quando o Change Request foi recebido, utilizei IA para analisar o impacto da nova funcionalidade sobre a estrutura existente.
+* controllers
+* services
+* repositories
+* schemas
+* rotas
+* middlewares
+* modelos Prisma
+* frontend
+* testes
 
-Foi decidido não criar uma tabela específica para a timeline.
+O código gerado ou sugerido foi executado no ambiente do projeto e ajustado conforme os erros encontrados.
 
-A solução adotada foi manter:
+### 5. Resolução de problemas
+
+Durante o desenvolvimento foram encontrados problemas de implementação, incluindo erros de TypeScript, sintaxe e integração entre frontend e backend.
+
+A IA foi utilizada para analisar os erros, encontrar a causa e sugerir correções.
+
+As correções foram aplicadas e posteriormente validadas executando novamente o sistema.
+
+### 6. Change Request
+
+A Change Request adicionou comentários e uma timeline unificada.
+
+A IA ajudou a analisar o impacto dessa alteração e foram avaliadas diferentes formas de implementação.
+
+A decisão final foi manter:
 
 ```text
 IncidentHistory
 IncidentComment
 ```
 
-separados no banco e combinar os dois registros na camada de serviço.
+como estruturas separadas e montar a timeline no service.
 
-A timeline é então formada pela união dos eventos e ordenada pela data.
+Isso evita criar uma tabela adicional apenas para representar a timeline e mantém cada tipo de informação organizado.
 
-Essa decisão reduz duplicação de dados e mantém a responsabilidade de cada entidade bem definida.
+### 7. Testes
 
----
-
-## Testes
-
-A IA também foi utilizada para definir cenários de teste e identificar casos que poderiam quebrar as regras existentes.
+A IA ajudou a definir a estratégia de testes e os cenários que deveriam ser validados.
 
 Foram criados testes para:
 
-* criação de incidentes;
-* validação;
-* listagem;
-* filtros;
-* alteração de status;
-* regra de incidentes críticos;
-* histórico;
-* dashboard;
-* criação de comentários;
-* comentários sem autor;
-* comentários sem conteúdo;
-* comentários vazios;
-* incidente inexistente;
-* persistência de comentários;
-* timeline;
-* ordem cronológica.
+* health check
+* criação
+* validação
+* listagem
+* filtros
+* mudança de status
+* regra de Critical
+* histórico
+* dashboard
+* comentários
+* persistência
+* timeline
 
-A suíte final possui:
+Resultado final:
 
 ```text
-20 testes
-20 passando
+Test Files  1 passed
+Tests       20 passed
+Failures    0
 ```
 
----
+### 8. Documentação
 
-## Validação humana
+A IA também foi utilizada para estruturar e revisar:
 
-O código sugerido pela IA não foi considerado automaticamente correto.
+* README.md
+* START.md
+* PLAN.md
+* AI_LOG.md
+* FINAL_REPORT.md
 
-Durante o desenvolvimento foram realizados:
+## Impacto da IA no desenvolvimento
 
-* testes automatizados;
-* testes manuais utilizando Thunder Client;
-* execução do build TypeScript;
-* verificação das respostas da API;
-* validação das regras de negócio.
+O principal impacto foi a **aceleração do ciclo de desenvolvimento**.
 
-Durante os testes foram encontradas regressões no fluxo de atualização de status e histórico.
-
-Esses problemas foram corrigidos antes da conclusão do projeto.
-
----
-
-## Principais decisões apoiadas pela IA
-
-### Regra de incidentes críticos
-
-Foi definida a validação para impedir:
+Em vez de utilizar a IA somente para gerar código, ela foi utilizada durante diferentes etapas:
 
 ```text
-CRITICAL:
-OPEN → RESOLVED
+Problema
+   ↓
+Análise com IA
+   ↓
+Planejamento
+   ↓
+Implementação
+   ↓
+Erro / dúvida
+   ↓
+Análise com IA
+   ↓
+Correção
+   ↓
+Teste
+   ↓
+Revisão
+   ↓
+Documentação
 ```
 
-sendo obrigatório:
+Esse processo permitiu avançar rapidamente entre as etapas e concentrar o esforço humano na tomada de decisões, validação e integração das partes.
 
-```text
-OPEN → IN_PROGRESS → RESOLVED
-```
+## Participação humana
 
-### Timeline
+Apesar do uso intenso de IA, a execução do projeto não foi automática.
 
-Foi decidido não duplicar os eventos em uma nova tabela.
+As decisões técnicas foram avaliadas durante o desenvolvimento e as funcionalidades foram executadas no ambiente local.
 
-### Validação
+A validação final incluiu:
 
-Foi utilizado Zod para validar os dados recebidos pela API.
-
-### Persistência
-
-Foi utilizado PostgreSQL com Prisma para garantir persistência dos dados.
-
-### Testes
-
-Foi utilizada uma combinação de testes de API e testes das principais regras de negócio.
-
----
+* execução do backend
+* execução do frontend
+* interação com o sistema
+* validação das regras
+* verificação da persistência
+* execução dos testes
+* execução do build
 
 ## Resultado
 
-A IA foi utilizada como ferramenta de apoio durante o desenvolvimento, principalmente para:
+A utilização de IA contribuiu diretamente para acelerar o desenvolvimento do Incident Hub e permitiu completar uma aplicação funcional dentro do tempo do hackathon.
 
-* analisar requisitos;
-* estruturar o projeto;
-* sugerir implementações;
-* revisar problemas;
-* criar cenários de teste;
-* analisar impactos de mudanças;
-* auxiliar na documentação.
+O projeto terminou com:
 
-As implementações foram executadas, testadas e corrigidas durante o desenvolvimento até que a aplicação apresentasse comportamento esperado.
+* backend funcional
+* banco PostgreSQL
+* frontend funcional
+* regras de negócio
+* histórico
+* comentários
+* timeline
+* dashboard
+* persistência
+* testes automatizados
+* documentação
 
-No momento da conclusão da implementação, os testes automatizados apresentavam:
+Resultado dos testes:
 
-```text
-20 passed
-20 total
-```
+**20/20 testes passando.**

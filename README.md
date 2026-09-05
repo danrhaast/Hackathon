@@ -1,8 +1,16 @@
 # Incident Hub
 
-Sistema para centralização e acompanhamento de incidentes operacionais.
+## Sobre o projeto
 
-O objetivo do Incident Hub é permitir que uma equipe registre, acompanhe e resolva incidentes em um único lugar, mantendo o histórico das alterações e das interações realizadas durante o tratamento.
+O **Incident Hub** é um sistema para centralizar o registro, acompanhamento e resolução de incidentes operacionais.
+
+O sistema permite registrar incidentes, acompanhar seus status, controlar a severidade, registrar alterações, adicionar comentários e visualizar uma timeline cronológica de todas as atividades.
+
+O projeto foi desenvolvido durante o **AI Engineering Hackathon**, utilizando IA como apoio durante análise, planejamento, implementação, revisão, testes e documentação.
+
+## Objetivo
+
+Criar uma solução simples e funcional para melhorar o controle de incidentes, permitindo que uma equipe acompanhe todo o ciclo de tratamento de um problema em um único lugar.
 
 ## Funcionalidades
 
@@ -10,54 +18,53 @@ O objetivo do Incident Hub é permitir que uma equipe registre, acompanhe e reso
 * Listagem de incidentes
 * Filtro por status
 * Filtro por severidade
-* Filtro combinado de status e severidade
+* Visualização dos detalhes
 * Alteração de status
-* Regra especial para incidentes críticos
-* Histórico de alterações de status
+* Histórico de alterações
+* Dashboard com indicadores
 * Comentários nos incidentes
-* Timeline cronológica de atividades
-* Dashboard com estatísticas
+* Timeline cronológica
 * Persistência dos dados em PostgreSQL
-* Seed inicial para popular o banco
 * Validação dos dados de entrada
-* Testes automatizados
+* Tratamento de erros
+* Interface web simples
 
-## Regra de negócio principal
+## Fluxo de status
 
-Incidentes com severidade `CRITICAL` não podem ser resolvidos diretamente.
-
-O fluxo obrigatório é:
-
-```text
-OPEN → IN_PROGRESS → RESOLVED
-```
-
-Uma tentativa de:
+Os incidentes possuem três estados:
 
 ```text
-OPEN → RESOLVED
+OPEN
+  ↓
+IN_PROGRESS
+  ↓
+RESOLVED
 ```
 
-é rejeitada pela API.
+Existe uma regra especial para incidentes **CRITICAL**:
+
+```text
+CRITICAL + OPEN
+       ↓
+Não pode ir diretamente para RESOLVED
+       ↓
+Deve passar por IN_PROGRESS
+       ↓
+RESOLVED
+```
+
+Essa regra é aplicada no backend.
 
 ## Timeline
 
-A timeline reúne em uma única sequência cronológica:
+A timeline reúne em uma única visualização:
 
-* alterações de status;
-* comentários realizados no incidente.
+* alterações de status
+* comentários
 
-Exemplo:
+Os eventos são organizados cronologicamente, permitindo visualizar a evolução completa de um incidente.
 
-```text
-10:31 — Status changed: Open → In Progress
-10:42 — Ana commented: "Provider contacted."
-11:14 — Status changed: In Progress → Resolved
-```
-
-Os eventos são armazenados separadamente no banco e combinados pela camada de serviço para formar a timeline.
-
-## Tecnologias
+## Tecnologia
 
 * Node.js
 * TypeScript
@@ -67,236 +74,160 @@ Os eventos são armazenados separadamente no banco e combinados pela camada de s
 * Zod
 * Vitest
 * Supertest
+* HTML
+* CSS
+* JavaScript
 
 ## Estrutura
 
 ```text
-incident-hub/
-├── src/
-│   ├── config/
-│   ├── database/
-│   ├── middlewares/
-│   ├── modules/
-│   │   └── incidents/
-│   ├── shared/
-│   ├── app.ts
-│   └── server.ts
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-├── tests/
-│   └── incidents/
-├── .env
-├── .env.example
-├── PLAN.md
-├── START.md
-├── AI_LOG.md
-└── README.md
+Hackathon/
+└── incident_hub/
+    ├── src/
+    │   ├── config/
+    │   ├── database/
+    │   ├── modules/
+    │   │   └── incidents/
+    │   ├── middlewares/
+    │   ├── shared/
+    │   ├── public/
+    │   ├── app.ts
+    │   └── server.ts
+    ├── prisma/
+    ├── tests/
+    ├── README.md
+    ├── START.md
+    ├── PLAN.md
+    ├── AI_LOG.md
+    └── FINAL_REPORT.md
 ```
 
 ## Como executar
 
-### 1. Instalar dependências
+**Importante:** os comandos devem ser executados dentro da pasta `incident_hub`.
+
+Se o terminal estiver na raiz do projeto `Hackathon`, primeiro entre na pasta:
+
+```bash
+cd incident_hub
+```
+
+Depois instale as dependências:
 
 ```bash
 npm install
 ```
 
-### 2. Configurar o ambiente
-
-Crie um arquivo `.env` na raiz do projeto:
+Configure o arquivo `.env`:
 
 ```env
 PORT=3000
 DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/incident_hub?schema=public"
 ```
 
-### 3. Criar o banco e executar as migrations
+Execute as migrations:
 
 ```bash
 npx prisma migrate dev
 ```
 
-### 4. Popular o banco
+Execute o seed:
 
 ```bash
 npm run seed
 ```
 
-### 5. Executar o projeto
+Inicie o sistema:
 
 ```bash
 npm run dev
 ```
 
-A API ficará disponível em:
+Depois acesse:
 
 ```text
 http://localhost:3000
 ```
 
-## Endpoints
+### Importante
 
-### Health Check
+Executar:
 
-```http
-GET /health
+```bash
+npm run dev
 ```
 
-### Criar incidente
+diretamente na raiz `Hackathon` não inicia o Incident Hub, pois o `package.json` e o código da aplicação estão dentro da pasta `incident_hub`.
 
-```http
-POST /incidents
-```
-
-Exemplo:
-
-```json
-{
-  "title": "Falha no processamento",
-  "description": "As transações estão apresentando erro.",
-  "severity": "CRITICAL"
-}
-```
-
-Severidades disponíveis:
+O fluxo correto é:
 
 ```text
-LOW
-MEDIUM
-HIGH
-CRITICAL
+Hackathon/
+    ↓
+cd incident_hub
+    ↓
+npm run dev
+    ↓
+http://localhost:3000
 ```
-
-### Listar incidentes
-
-```http
-GET /incidents
-```
-
-### Filtrar incidentes
-
-Por status:
-
-```http
-GET /incidents?status=OPEN
-```
-
-Por severidade:
-
-```http
-GET /incidents?severity=CRITICAL
-```
-
-Combinando filtros:
-
-```http
-GET /incidents?status=IN_PROGRESS&severity=CRITICAL
-```
-
-### Consultar incidente
-
-```http
-GET /incidents/:id
-```
-
-### Alterar status
-
-```http
-PATCH /incidents/:id/status
-```
-
-Exemplo:
-
-```json
-{
-  "status": "IN_PROGRESS",
-  "changedBy": "Daniel"
-}
-```
-
-### Dashboard
-
-```http
-GET /incidents/dashboard
-```
-
-Retorna estatísticas de quantidade total, status e severidade.
-
-### Criar comentário
-
-```http
-POST /incidents/:id/comments
-```
-
-Exemplo:
-
-```json
-{
-  "author": "Ana",
-  "content": "Provider contacted."
-}
-```
-
-### Consultar timeline
-
-```http
-GET /incidents/:id/timeline
-```
-
-Retorna os comentários e alterações de status em ordem cronológica.
 
 ## Testes
 
-O projeto possui testes automatizados utilizando Vitest e Supertest.
-
-Executar os testes:
+Os testes devem ser executados dentro da pasta `incident_hub`:
 
 ```bash
+cd incident_hub
 npm run test:run
 ```
 
-Executar em modo de desenvolvimento:
+Resultado final:
 
-```bash
-npm run test
+```text
+Test Files  1 passed
+Tests       20 passed
 ```
 
-A suíte cobre as principais regras do sistema, incluindo:
+Os testes cobrem:
 
-* criação;
-* validação;
-* listagem;
-* filtros;
-* alteração de status;
-* regra de incidentes críticos;
-* histórico;
-* dashboard;
-* comentários;
-* persistência;
-* timeline;
-* ordenação cronológica.
+* health check
+* criação
+* validação
+* listagem
+* filtros
+* alteração de status
+* regra de incidentes críticos
+* histórico
+* dashboard
+* comentários
+* persistência
+* timeline
 
 ## Build
 
-Para verificar a compilação TypeScript:
+Dentro da pasta `incident_hub`:
 
 ```bash
 npm run build
 ```
 
-## Seed
+## Uso de IA
 
-Para inserir dados iniciais:
+A IA foi utilizada como ferramenta de engenharia durante o desenvolvimento para acelerar:
 
-```bash
-npm run seed
-```
+* análise dos requisitos
+* planejamento da solução
+* definição da arquitetura
+* implementação
+* revisão de código
+* identificação e correção de erros
+* criação dos testes
+* documentação
+* análise da Change Request
 
-O seed cria incidentes com diferentes severidades e status para facilitar os testes e a demonstração do sistema.
+A utilização de IA acelerou o ciclo de desenvolvimento sem substituir a validação humana. As funcionalidades foram executadas e verificadas no ambiente local antes da entrega.
 
-## Objetivo do projeto
+## Resultado
 
-O Incident Hub foi desenvolvido durante o AI Engineering Hackathon com foco em resolver o problema de centralização e acompanhamento de incidentes operacionais.
+O sistema foi finalizado dentro do período do hackathon, com backend, banco de dados, frontend, regras de negócio, testes automatizados e documentação funcionando de forma integrada.
 
-A implementação prioriza regras de negócio, persistência, rastreabilidade, validação e testes automatizados, mantendo a interface simples para concentrar o desenvolvimento na camada responsável pelo funcionamento do sistema.
+**Resultado final: sistema funcional, persistente e validado com 20/20 testes automatizados passando.**
