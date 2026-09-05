@@ -1,4 +1,4 @@
-```javascript
+
 const incidentList = document.getElementById("incidentList");
 
 const statusFilter = document.getElementById("statusFilter");
@@ -14,19 +14,24 @@ const API = "/incidents";
 const statusLabels = {
   OPEN: "Aberto",
   IN_PROGRESS: "Em andamento",
-  RESOLVED: "Resolvido",
+  RESOLVED: "Resolvido"
 };
 
 const severityLabels = {
   LOW: "Baixa",
   MEDIUM: "Média",
   HIGH: "Alta",
-  CRITICAL: "Crítica",
+  CRITICAL: "Crítica"
 };
+
+
+// ===============================
+// DASHBOARD
+// ===============================
 
 async function loadDashboard() {
   try {
-    const response = await fetch(`${API}/dashboard`);
+    const response = await fetch(API + "/dashboard");
 
     if (!response.ok) {
       throw new Error("Erro ao carregar dashboard");
@@ -39,10 +44,16 @@ async function loadDashboard() {
     document.getElementById("inProgress").textContent = data.inProgress;
     document.getElementById("resolved").textContent = data.resolved;
     document.getElementById("critical").textContent = data.critical;
+
   } catch (error) {
-    console.error(error);
+    console.error("Erro no dashboard:", error);
   }
 }
+
+
+// ===============================
+// LISTAR INCIDENTES
+// ===============================
 
 async function loadIncidents() {
   try {
@@ -59,473 +70,835 @@ async function loadIncidents() {
       params.append("severity", severityFilter.value);
     }
 
-    const query = params.toString();
+    let url = API;
 
-    const response = await fetch(
-      `${API}${query ? `?${query}` : ""}`
-    );
+    if (params.toString()) {
+      url += "?" + params.toString();
+    }
+
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error("Erro ao carregar incidentes");
+      throw new Error("Erro HTTP: " + response.status);
     }
 
     const incidents = await response.json();
 
-    renderIncidents(incidents);
-  } catch (error) {
-    console.error(error);
+    console.log("Incidentes recebidos:", incidents);
 
-    incidentList.innerHTML = `
-      <p class="error">
-        Não foi possível carregar os incidentes.
-      </p>
-    `;
+    renderIncidents(incidents);
+
+  } catch (error) {
+    console.error("Erro ao carregar incidentes:", error);
+
+    incidentList.innerHTML =
+      '<p class="error">Não foi possível carregar os incidentes.</p>';
   }
 }
 
+
+// ===============================
+// RENDERIZAR INCIDENTES
+// ===============================
+
 function renderIncidents(incidents) {
-  if (!incidents.length) {
-    incidentList.innerHTML = `
-      <p class="empty">
-        Nenhum incidente encontrado.
-      </p>
-    `;
+
+  if (!incidents || incidents.length === 0) {
+    incidentList.innerHTML =
+      '<p class="empty">Nenhum incidente encontrado.</p>';
 
     return;
   }
 
-  incidentList.innerHTML = incidents
-    .map((incident) => {
-      const severityClass =
-        `severity-${incident.severity.toLowerCase()}`;
+  incidentList.innerHTML = "";
 
-      const statusClass =
-        `status-${incident.status
-          .toLowerCase()
-          .replace("_", "-")}`;
+  incidents.forEach(function (incident) {
 
-      return `
-        <article class="incident">
+    const article = document.createElement("article");
 
-          <div class="incident-info">
-            <h3>${escapeHtml(incident.title)}</h3>
+    article.className = "incident";
 
-            <p>
-              ${escapeHtml(
-                truncate(incident.description, 120)
-              )}
-            </p>
-          </div>
+    const info = document.createElement("div");
 
-          <div class="incident-meta">
+    info.className = "incident-info";
 
-            <span class="badge ${severityClass}">
-              ${severityLabels[incident.severity]}
-            </span>
+    const title = document.createElement("h3");
 
-            <span class="badge ${statusClass}">
-              ${statusLabels[incident.status]}
-            </span>
+    title.textContent = incident.title;
 
-            <button
-              class="details-button"
-              onclick="openIncident('${incident.id}')"
-            >
-              Detalhes
-            </button>
+    const description = document.createElement("p");
 
-          </div>
+    description.textContent =
+      truncate(incident.description, 120);
 
-        </article>
-      `;
-    })
-    .join("");
+    info.appendChild(title);
+    info.appendChild(description);
+
+
+    const meta = document.createElement("div");
+
+    meta.className = "incident-meta";
+
+
+    const severity = document.createElement("span");
+
+    severity.className =
+      "badge severity-" + incident.severity.toLowerCase();
+
+    severity.textContent =
+      severityLabels[incident.severity];
+
+
+    const status = document.createElement("span");
+
+    status.className =
+      "badge status-" +
+      incident.status.toLowerCase().replace("_", "-");
+
+    status.textContent =
+      statusLabels[incident.status];
+
+
+    const button = document.createElement("button");
+
+    button.className = "details-button";
+
+    button.textContent = "Detalhes";
+
+    button.addEventListener("click", function () {
+      openIncident(incident.id);
+    });
+
+
+    meta.appendChild(severity);
+    meta.appendChild(status);
+    meta.appendChild(button);
+
+    article.appendChild(info);
+    article.appendChild(meta);
+
+    incidentList.appendChild(article);
+  });
 }
 
+
+// ===============================
+// DETALHES
+// ===============================
+
 async function openIncident(id) {
+
   detailsModal.classList.remove("hidden");
 
-  const detailsBody = document.getElementById("detailsBody");
+  const detailsBody =
+    document.getElementById("detailsBody");
 
   detailsBody.innerHTML =
     '<p class="loading">Carregando incidente...</p>';
 
   try {
-    const response = await fetch(`${API}/${id}`);
+
+    const response =
+      await fetch(API + "/" + id);
 
     if (!response.ok) {
       throw new Error("Erro ao carregar incidente");
     }
 
-    const incident = await response.json();
+    const incident =
+      await response.json();
 
     document.getElementById("detailsTitle").textContent =
       incident.title;
 
-    renderIncidentDetails(incident);
+    await renderIncidentDetails(incident);
+
   } catch (error) {
+
     console.error(error);
 
-    detailsBody.innerHTML = `
-      <p class="error">
-        Não foi possível carregar o incidente.
-      </p>
-    `;
+    detailsBody.innerHTML =
+      '<p class="error">Não foi possível carregar o incidente.</p>';
   }
 }
 
+
+// ===============================
+// DETALHES DO INCIDENTE
+// ===============================
+
 async function renderIncidentDetails(incident) {
-  const detailsBody = document.getElementById("detailsBody");
+
+  const detailsBody =
+    document.getElementById("detailsBody");
 
   let timeline = [];
 
   try {
-    const response = await fetch(
-      `${API}/${incident.id}/timeline`
-    );
+
+    const response =
+      await fetch(
+        API + "/" + incident.id + "/timeline"
+      );
 
     if (response.ok) {
       timeline = await response.json();
     }
+
   } catch (error) {
-    console.error(error);
+    console.error("Erro na timeline:", error);
   }
 
-  detailsBody.innerHTML = `
-    <div class="detail-description">
-      ${escapeHtml(incident.description)}
-    </div>
 
-    <div>
-      <span class="badge severity-${incident.severity.toLowerCase()}">
-        ${severityLabels[incident.severity]}
-      </span>
+  const description =
+    document.createElement("div");
 
-      <span class="badge status-${incident.status
-        .toLowerCase()
-        .replace("_", "-")}">
-        ${statusLabels[incident.status]}
-      </span>
-    </div>
+  description.className =
+    "detail-description";
 
-    <div class="detail-section">
-      <h3>Alterar status</h3>
+  description.textContent =
+    incident.description;
 
-      <div class="status-actions">
 
-        ${
-          incident.status !== "OPEN"
-            ? `
-              <button
-                class="button secondary"
-                onclick="updateStatus('${incident.id}', 'OPEN')"
-              >
-                Aberto
-              </button>
-            `
-            : ""
-        }
+  const badges =
+    document.createElement("div");
 
-        ${
-          incident.status !== "IN_PROGRESS"
-            ? `
-              <button
-                class="button secondary"
-                onclick="updateStatus('${incident.id}', 'IN_PROGRESS')"
-              >
-                Em andamento
-              </button>
-            `
-            : ""
-        }
 
-        ${
-          incident.status !== "RESOLVED"
-            ? `
-              <button
-                class="button primary"
-                onclick="updateStatus('${incident.id}', 'RESOLVED')"
-              >
-                Resolver
-              </button>
-            `
-            : ""
-        }
+  const severity =
+    document.createElement("span");
 
-      </div>
-    </div>
+  severity.className =
+    "badge severity-" +
+    incident.severity.toLowerCase();
 
-    <div class="detail-section">
-      <h3>Timeline</h3>
+  severity.textContent =
+    severityLabels[incident.severity];
 
-      <div class="timeline">
-        ${
-          timeline.length
-            ? timeline
-                .map(renderTimelineItem)
-                .join("")
-            : `
-              <p class="empty">
-                Nenhuma atividade registrada.
-              </p>
-            `
-        }
-      </div>
-    </div>
 
-    <div class="detail-section">
-      <h3>Novo comentário</h3>
+  const status =
+    document.createElement("span");
 
-      <form
-        class="comment-form"
-        onsubmit="addComment(event, '${incident.id}')"
-      >
+  status.className =
+    "badge status-" +
+    incident.status.toLowerCase().replace("_", "-");
 
-        <input
-          id="commentAuthor"
-          type="text"
-          placeholder="Seu nome"
-          required
-        >
+  status.textContent =
+    statusLabels[incident.status];
 
-        <textarea
-          id="commentContent"
-          placeholder="Escreva um comentário..."
-          required
-        ></textarea>
 
-        <button type="submit" class="button primary">
-          Adicionar comentário
-        </button>
+  badges.appendChild(severity);
+  badges.appendChild(status);
 
-      </form>
-    </div>
-  `;
+
+  const statusSection =
+    document.createElement("div");
+
+  statusSection.className =
+    "detail-section";
+
+
+  const statusTitle =
+    document.createElement("h3");
+
+  statusTitle.textContent =
+    "Alterar status";
+
+
+  const statusActions =
+    document.createElement("div");
+
+  statusActions.className =
+    "status-actions";
+
+
+  if (incident.status !== "OPEN") {
+    createStatusButton(
+      statusActions,
+      incident.id,
+      "OPEN",
+      "Aberto"
+    );
+  }
+
+  if (incident.status !== "IN_PROGRESS") {
+    createStatusButton(
+      statusActions,
+      incident.id,
+      "IN_PROGRESS",
+      "Em andamento"
+    );
+  }
+
+  if (incident.status !== "RESOLVED") {
+    createStatusButton(
+      statusActions,
+      incident.id,
+      "RESOLVED",
+      "Resolver"
+    );
+  }
+
+
+  statusSection.appendChild(statusTitle);
+  statusSection.appendChild(statusActions);
+
+
+  const timelineSection =
+    document.createElement("div");
+
+  timelineSection.className =
+    "detail-section";
+
+
+  const timelineTitle =
+    document.createElement("h3");
+
+  timelineTitle.textContent =
+    "Timeline";
+
+
+  const timelineContainer =
+    document.createElement("div");
+
+  timelineContainer.className =
+    "timeline";
+
+
+  if (timeline.length === 0) {
+
+    timelineContainer.innerHTML =
+      '<p class="empty">Nenhuma atividade registrada.</p>';
+
+  } else {
+
+    timeline.forEach(function (item) {
+
+      const element =
+        createTimelineItem(item);
+
+      timelineContainer.appendChild(element);
+
+    });
+  }
+
+
+  timelineSection.appendChild(timelineTitle);
+  timelineSection.appendChild(timelineContainer);
+
+
+  const commentSection =
+    document.createElement("div");
+
+  commentSection.className =
+    "detail-section";
+
+
+  const commentTitle =
+    document.createElement("h3");
+
+  commentTitle.textContent =
+    "Novo comentário";
+
+
+  const form =
+    document.createElement("form");
+
+  form.className =
+    "comment-form";
+
+
+  const author =
+    document.createElement("input");
+
+  author.id =
+    "commentAuthor";
+
+  author.type =
+    "text";
+
+  author.placeholder =
+    "Seu nome";
+
+  author.required =
+    true;
+
+
+  const content =
+    document.createElement("textarea");
+
+  content.id =
+    "commentContent";
+
+  content.placeholder =
+    "Escreva um comentário...";
+
+  content.required =
+    true;
+
+
+  const submit =
+    document.createElement("button");
+
+  submit.type =
+    "submit";
+
+  submit.className =
+    "button primary";
+
+  submit.textContent =
+    "Adicionar comentário";
+
+
+  form.appendChild(author);
+  form.appendChild(content);
+  form.appendChild(submit);
+
+
+  form.addEventListener("submit", function (event) {
+
+    addComment(
+      event,
+      incident.id
+    );
+
+  });
+
+
+  commentSection.appendChild(commentTitle);
+  commentSection.appendChild(form);
+
+
+  detailsBody.innerHTML = "";
+
+  detailsBody.appendChild(description);
+  detailsBody.appendChild(badges);
+  detailsBody.appendChild(statusSection);
+  detailsBody.appendChild(timelineSection);
+  detailsBody.appendChild(commentSection);
 }
 
-function renderTimelineItem(item) {
-  const date = new Date(item.date);
 
-  const formattedDate = date.toLocaleString("pt-BR");
+// ===============================
+// BOTÕES DE STATUS
+// ===============================
+
+function createStatusButton(
+  container,
+  id,
+  status,
+  label
+) {
+
+  const button =
+    document.createElement("button");
+
+  button.className =
+    "button secondary";
+
+  button.textContent =
+    label;
+
+  button.addEventListener(
+    "click",
+    function () {
+      updateStatus(id, status);
+    }
+  );
+
+  container.appendChild(button);
+}
+
+
+// ===============================
+// TIMELINE
+// ===============================
+
+function createTimelineItem(item) {
+
+  const element =
+    document.createElement("div");
+
+  element.className =
+    "timeline-item";
+
+
+  const date =
+    document.createElement("div");
+
+  date.className =
+    "timeline-date";
+
+  date.textContent =
+    new Date(item.date).toLocaleString("pt-BR");
+
+
+  element.appendChild(date);
+
 
   if (item.type === "STATUS_CHANGE") {
-    return `
-      <div class="timeline-item">
 
-        <div class="timeline-date">
-          ${formattedDate}
-        </div>
+    const title =
+      document.createElement("strong");
 
-        <strong>
-          Status alterado
-        </strong>
+    title.textContent =
+      "Status alterado";
 
-        <p>
-          ${item.previousStatus
-            ? statusLabels[item.previousStatus]
-            : "Criado"}
-          →
-          ${statusLabels[item.newStatus]}
-        </p>
+    const text =
+      document.createElement("p");
 
-        ${
-          item.author
-            ? `<small>Por ${escapeHtml(item.author)}</small>`
-            : ""
-        }
+    const previous =
+      item.previousStatus
+        ? statusLabels[item.previousStatus]
+        : "Criado";
 
-      </div>
-    `;
+    const current =
+      statusLabels[item.newStatus];
+
+    text.textContent =
+      previous + " → " + current;
+
+    element.appendChild(title);
+    element.appendChild(text);
+
+
+    if (item.author) {
+
+      const author =
+        document.createElement("small");
+
+      author.textContent =
+        "Por " + item.author;
+
+      element.appendChild(author);
+    }
+
+  } else {
+
+    const title =
+      document.createElement("strong");
+
+    title.textContent =
+      item.author + " comentou:";
+
+
+    const content =
+      document.createElement("p");
+
+    content.textContent =
+      item.content;
+
+
+    element.appendChild(title);
+    element.appendChild(content);
   }
 
-  return `
-    <div class="timeline-item">
 
-      <div class="timeline-date">
-        ${formattedDate}
-      </div>
-
-      <strong>
-        ${escapeHtml(item.author)} comentou:
-      </strong>
-
-      <p>
-        ${escapeHtml(item.content)}
-      </p>
-
-    </div>
-  `;
+  return element;
 }
 
-async function updateStatus(id, status) {
-  try {
-    const response = await fetch(`${API}/${id}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status,
-        changedBy: "Usuário",
-      }),
-    });
 
-    const data = await response.json();
+// ===============================
+// ALTERAR STATUS
+// ===============================
+
+async function updateStatus(id, status) {
+
+  try {
+
+    const response =
+      await fetch(
+        API + "/" + id + "/status",
+        {
+          method: "PATCH",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            status: status,
+            changedBy: "Usuário"
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
 
     if (!response.ok) {
-      alert(data.message || "Não foi possível alterar o status.");
+
+      alert(
+        data.message ||
+        "Não foi possível alterar o status."
+      );
+
       return;
     }
+
 
     await loadDashboard();
     await loadIncidents();
 
-    openIncident(id);
+    await openIncident(id);
+
   } catch (error) {
+
     console.error(error);
+
     alert("Erro ao alterar status.");
   }
 }
 
+
+// ===============================
+// COMENTÁRIOS
+// ===============================
+
 async function addComment(event, id) {
+
   event.preventDefault();
 
+
   const author =
-    document.getElementById("commentAuthor").value.trim();
+    document
+      .getElementById("commentAuthor")
+      .value
+      .trim();
+
 
   const content =
-    document.getElementById("commentContent").value.trim();
+    document
+      .getElementById("commentContent")
+      .value
+      .trim();
+
 
   if (!author || !content) {
-    alert("Autor e comentário são obrigatórios.");
+
+    alert(
+      "Autor e comentário são obrigatórios."
+    );
+
     return;
   }
 
-  try {
-    const response = await fetch(
-      `${API}/${id}/comments`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          author,
-          content,
-        }),
-      }
-    );
 
-    const data = await response.json();
+  try {
+
+    const response =
+      await fetch(
+        API + "/" + id + "/comments",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            author: author,
+            content: content
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
 
     if (!response.ok) {
-      alert(data.message || "Não foi possível adicionar o comentário.");
+
+      alert(
+        data.message ||
+        "Não foi possível adicionar o comentário."
+      );
+
       return;
     }
 
-    openIncident(id);
+
+    await openIncident(id);
+
   } catch (error) {
+
     console.error(error);
+
     alert("Erro ao adicionar comentário.");
   }
 }
 
-/* Modal */
+
+// ===============================
+// MODAIS
+// ===============================
 
 document
   .getElementById("newIncidentButton")
-  .addEventListener("click", () => {
-    incidentModal.classList.remove("hidden");
-  });
+  .addEventListener(
+    "click",
+    function () {
+
+      incidentModal.classList.remove("hidden");
+
+    }
+  );
+
 
 document
   .getElementById("closeModal")
-  .addEventListener("click", closeIncidentModal);
+  .addEventListener(
+    "click",
+    closeIncidentModal
+  );
+
 
 document
   .getElementById("cancelModal")
-  .addEventListener("click", closeIncidentModal);
+  .addEventListener(
+    "click",
+    closeIncidentModal
+  );
+
 
 document
   .getElementById("closeDetails")
-  .addEventListener("click", () => {
-    detailsModal.classList.add("hidden");
-  });
+  .addEventListener(
+    "click",
+    function () {
+
+      detailsModal.classList.add("hidden");
+
+    }
+  );
+
 
 function closeIncidentModal() {
+
   incidentModal.classList.add("hidden");
+
   incidentForm.reset();
 }
 
-/* Criar incidente */
 
-incidentForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+// ===============================
+// CRIAR INCIDENTE
+// ===============================
 
-  const data = {
-    title: document.getElementById("title").value.trim(),
-    description: document
-      .getElementById("description")
-      .value.trim(),
-    severity: document.getElementById("severity").value,
-  };
+incidentForm.addEventListener(
+  "submit",
+  async function (event) {
 
-  try {
-    const response = await fetch(API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    event.preventDefault();
 
-    const result = await response.json();
 
-    if (!response.ok) {
-      alert(result.message || "Não foi possível criar o incidente.");
-      return;
+    const data = {
+
+      title:
+        document
+          .getElementById("title")
+          .value
+          .trim(),
+
+      description:
+        document
+          .getElementById("description")
+          .value
+          .trim(),
+
+      severity:
+        document
+          .getElementById("severity")
+          .value
+    };
+
+
+    try {
+
+      const response =
+        await fetch(
+          API,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(data)
+          }
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        alert(
+          result.message ||
+          "Não foi possível criar o incidente."
+        );
+
+        return;
+      }
+
+
+      closeIncidentModal();
+
+      await loadDashboard();
+      await loadIncidents();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Erro ao criar incidente.");
     }
-
-    closeIncidentModal();
-
-    await loadDashboard();
-    await loadIncidents();
-  } catch (error) {
-    console.error(error);
-    alert("Erro ao criar incidente.");
   }
-});
+);
 
-/* Filtros */
 
-statusFilter.addEventListener("change", loadIncidents);
-severityFilter.addEventListener("change", loadIncidents);
+// ===============================
+// FILTROS
+// ===============================
 
-/* Segurança básica para conteúdo vindo da API */
+statusFilter.addEventListener(
+  "change",
+  loadIncidents
+);
 
-function escapeHtml(value) {
-  if (value === null || value === undefined) {
+severityFilter.addEventListener(
+  "change",
+  loadIncidents
+);
+
+
+// ===============================
+// UTILITÁRIOS
+// ===============================
+
+function truncate(value, maxLength) {
+
+  if (!value) {
     return "";
   }
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function truncate(value, maxLength) {
   if (value.length <= maxLength) {
     return value;
   }
 
-  return `${value.substring(0, maxLength)}...`;
+  return value.substring(0, maxLength) + "...";
 }
 
-/* Inicialização */
+
+// ===============================
+// INICIALIZAÇÃO
+// ===============================
 
 loadDashboard();
 loadIncidents();
-```
+
