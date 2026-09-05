@@ -20,8 +20,11 @@ export class IncidentService {
     return this.repository.findById(id);
   }
 
-  async findAll() {
-    return this.repository.findAll();
+  async findAll(filters?: {
+    status?: "OPEN" | "IN_PROGRESS" | "RESOLVED";
+    severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  }) {
+    return this.repository.findAll(filters);
   }
 
   async updateStatus(

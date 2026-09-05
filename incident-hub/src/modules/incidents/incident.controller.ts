@@ -14,11 +14,27 @@ export class IncidentController {
         return res.status(201).json(incident);
     }
 
-    async findAll(_req: Request, res: Response) {
-        const incidents = await incidentService.findAll();
-
+    async findAll(req: Request, res: Response) {
+        const status = req.query.status as
+          | "OPEN"
+          | "IN_PROGRESS"
+          | "RESOLVED"
+          | undefined;
+      
+        const severity = req.query.severity as
+          | "LOW"
+          | "MEDIUM"
+          | "HIGH"
+          | "CRITICAL"
+          | undefined;
+      
+        const incidents = await incidentService.findAll({
+          status,
+          severity,
+        });
+      
         return res.status(200).json(incidents);
-    }
+      }
 
     async findById(req: Request, res: Response) {
         const { id } = req.params as { id: string };

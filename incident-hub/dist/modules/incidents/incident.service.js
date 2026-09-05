@@ -14,8 +14,8 @@ class IncidentService {
     async findById(id) {
         return this.repository.findById(id);
     }
-    async findAll() {
-        return this.repository.findAll();
+    async findAll(filters) {
+        return this.repository.findAll(filters);
     }
     async updateStatus(id, status, changedBy) {
         const incident = await this.repository.findById(id);

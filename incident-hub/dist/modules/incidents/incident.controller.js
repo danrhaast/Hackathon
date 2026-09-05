@@ -11,8 +11,13 @@ class IncidentController {
         const incident = await incidentService.create(data);
         return res.status(201).json(incident);
     }
-    async findAll(_req, res) {
-        const incidents = await incidentService.findAll();
+    async findAll(req, res) {
+        const status = req.query.status;
+        const severity = req.query.severity;
+        const incidents = await incidentService.findAll({
+            status,
+            severity,
+        });
         return res.status(200).json(incidents);
     }
     async findById(req, res) {

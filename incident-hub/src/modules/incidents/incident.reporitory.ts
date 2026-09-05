@@ -26,8 +26,15 @@ export class IncidentRepository {
     });
   }
 
-  async findAll() {
+  async findAll(filters?: {
+    status?: "OPEN" | "IN_PROGRESS" | "RESOLVED";
+    severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  }) {
     return prisma.incident.findMany({
+      where: {
+        status: filters?.status,
+        severity: filters?.severity,
+      },
       orderBy: {
         createdAt: "desc",
       },

@@ -22,8 +22,12 @@ class IncidentRepository {
             },
         });
     }
-    async findAll() {
+    async findAll(filters) {
         return prisma_1.prisma.incident.findMany({
+            where: {
+                status: filters?.status,
+                severity: filters?.severity,
+            },
             orderBy: {
                 createdAt: "desc",
             },
