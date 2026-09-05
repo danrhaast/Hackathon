@@ -19,6 +19,11 @@ class IncidentRepository {
                         changedAt: "asc",
                     },
                 },
+                comments: {
+                    orderBy: {
+                        createdAt: "asc",
+                    },
+                },
             },
         });
     }
@@ -52,6 +57,65 @@ class IncidentRepository {
                 },
             });
             return incident;
+        });
+    }
+    async getDashboard() {
+        const [total, open, inProgress, resolved, critical, high, medium, low,] = await Promise.all([
+            prisma_1.prisma.incident.count(),
+            prisma_1.prisma.incident.count({
+                where: {
+                    status: "OPEN",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    status: "IN_PROGRESS",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    status: "RESOLVED",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    severity: "CRITICAL",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    severity: "HIGH",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    severity: "MEDIUM",
+                },
+            }),
+            prisma_1.prisma.incident.count({
+                where: {
+                    severity: "LOW",
+                },
+            }),
+        ]);
+        return {
+            total,
+            open,
+            inProgress,
+            resolved,
+            critical,
+            high,
+            medium,
+            low,
+        };
+    }
+    async createComment(incidentId, data) {
+        return prisma_1.prisma.incidentComment.create({
+            data: {
+                incidentId,
+                author: data.author,
+                content: data.content,
+            },
         });
     }
 }

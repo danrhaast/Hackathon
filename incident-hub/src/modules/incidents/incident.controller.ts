@@ -4,7 +4,8 @@ import {
     createIncidentSchema,
     updateIncidentStatusSchema,
     incidentFiltersSchema,
-  } from "./incident.schema";
+    createCommentSchema,
+} from "./incident.schema";
 
 const incidentService = new IncidentService();
 
@@ -19,11 +20,11 @@ export class IncidentController {
 
     async findAll(req: Request, res: Response) {
         const filters = incidentFiltersSchema.parse(req.query);
-      
+
         const incidents = await incidentService.findAll(filters);
-      
+
         return res.status(200).json(incidents);
-      }
+    }
 
     async findById(req: Request, res: Response) {
         const { id } = req.params as { id: string };
@@ -56,5 +57,26 @@ export class IncidentController {
         const dashboard = await incidentService.getDashboard();
 
         return res.status(200).json(dashboard);
+    }
+
+    async createComment(req: Request, res: Response) {
+        const { id } = req.params as { id: string };
+
+        const data = createCommentSchema.parse(req.body);
+
+        const comment = await incidentService.createComment(
+            id,
+            data
+        );
+
+        return res.status(201).json(comment);
+    }
+
+    async getTimeline(req: Request, res: Response) {
+        const { id } = req.params as { id: string };
+
+        const timeline = await incidentService.getTimeline(id);
+
+        return res.status(200).json(timeline);
     }
 }

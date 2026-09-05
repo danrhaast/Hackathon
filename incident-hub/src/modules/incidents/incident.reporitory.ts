@@ -22,6 +22,11 @@ export class IncidentRepository {
             changedAt: "asc",
           },
         },
+        comments: {
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
       },
     });
   }
@@ -137,4 +142,22 @@ export class IncidentRepository {
       low,
     };
   }
+
+  async createComment(
+    incidentId: string,
+    data: {
+      author: string;
+      content: string;
+    }
+  ) {
+    return prisma.incidentComment.create({
+      data: {
+        incidentId,
+        author: data.author,
+        content: data.content,
+      },
+    });
+  }
+
 }
+

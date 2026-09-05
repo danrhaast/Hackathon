@@ -18,7 +18,7 @@ incidentRoutes.get(
 incidentRoutes.get(
     "/dashboard",
     incidentController.getDashboard.bind(incidentController)
-  );
+);
 
 incidentRoutes.get(
     "/:id",
@@ -28,6 +28,16 @@ incidentRoutes.get(
 incidentRoutes.patch(
     "/:id/status",
     incidentController.updateStatus.bind(incidentController)
+);
+
+incidentRoutes.post(
+    "/:id/comments",
+    incidentController.createComment.bind(incidentController)
+);
+
+incidentRoutes.get(
+    "/:id/timeline",
+    incidentController.getTimeline.bind(incidentController)
 );
 
 export { incidentRoutes };

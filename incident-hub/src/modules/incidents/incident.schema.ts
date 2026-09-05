@@ -57,3 +57,17 @@ export const incidentFiltersSchema = z.object({
 export type IncidentFiltersInput = z.infer<
   typeof incidentFiltersSchema
 >;
+
+export const createCommentSchema = z.object({
+    author: z
+      .string()
+      .min(1, "Author is required"),
+  
+    content: z
+      .string()
+      .min(1, "Comment content is required"),
+  });
+  
+  export type CreateCommentInput = z.infer<
+    typeof createCommentSchema
+  >;
