@@ -1,0 +1,157 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incident Hub</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <h1>Incident Hub</h1>
+      <p>Central de gerenciamento de incidentes</p>
+    </div>
+
+    <button id="newIncidentButton" class="button primary">
+      + Novo incidente
+    </button>
+  </header>
+
+  <main class="container">
+
+    <!-- Dashboard -->
+    <section class="dashboard">
+      <div class="card">
+        <span>Total</span>
+        <strong id="total">0</strong>
+      </div>
+
+      <div class="card">
+        <span>Abertos</span>
+        <strong id="open">0</strong>
+      </div>
+
+      <div class="card">
+        <span>Em andamento</span>
+        <strong id="inProgress">0</strong>
+      </div>
+
+      <div class="card">
+        <span>Resolvidos</span>
+        <strong id="resolved">0</strong>
+      </div>
+
+      <div class="card critical-card">
+        <span>Críticos</span>
+        <strong id="critical">0</strong>
+      </div>
+    </section>
+
+    <!-- Incidentes -->
+    <section class="incidents-section">
+
+      <div class="section-header">
+        <div>
+          <h2>Incidentes</h2>
+          <p>Gerencie os incidentes registrados no sistema.</p>
+        </div>
+
+        <div class="filters">
+          <select id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="OPEN">Abertos</option>
+            <option value="IN_PROGRESS">Em andamento</option>
+            <option value="RESOLVED">Resolvidos</option>
+          </select>
+
+          <select id="severityFilter">
+            <option value="">Todas as severidades</option>
+            <option value="LOW">Baixa</option>
+            <option value="MEDIUM">Média</option>
+            <option value="HIGH">Alta</option>
+            <option value="CRITICAL">Crítica</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="incidentList" class="incident-list">
+        <p class="loading">Carregando incidentes...</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Modal: novo incidente -->
+  <div id="incidentModal" class="modal hidden">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2>Novo incidente</h2>
+        <button id="closeModal" class="close-button">&times;</button>
+      </div>
+
+      <form id="incidentForm">
+
+        <label for="title">Título</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          placeholder="Ex: Falha no processamento"
+          required
+        >
+
+        <label for="description">Descrição</label>
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Descreva o incidente..."
+          required
+        ></textarea>
+
+        <label for="severity">Severidade</label>
+        <select id="severity" name="severity" required>
+          <option value="LOW">Baixa</option>
+          <option value="MEDIUM">Média</option>
+          <option value="HIGH">Alta</option>
+          <option value="CRITICAL">Crítica</option>
+        </select>
+
+        <div class="form-actions">
+          <button type="button" id="cancelModal" class="button secondary">
+            Cancelar
+          </button>
+
+          <button type="submit" class="button primary">
+            Criar incidente
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: detalhes -->
+  <div id="detailsModal" class="modal hidden">
+    <div class="modal-content details-content">
+
+      <div class="modal-header">
+        <h2 id="detailsTitle">Detalhes</h2>
+        <button id="closeDetails" class="close-button">&times;</button>
+      </div>
+
+      <div id="detailsBody">
+        <p class="loading">Carregando...</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
+```

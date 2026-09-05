@@ -10,6 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(express.static("src/public"));
+
+app.get("/health", ...);
+
+app.use("/incidents", incidentRoutes);
+
 app.get("/health", (_req, res) => {
   return res.status(200).json({
     status: "ok",
