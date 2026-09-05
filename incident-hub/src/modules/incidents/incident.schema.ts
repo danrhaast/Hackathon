@@ -34,3 +34,26 @@ export const updateIncidentStatusSchema = z.object({
 export type UpdateIncidentStatusInput = z.infer<
   typeof updateIncidentStatusSchema
 >;
+
+export const incidentFiltersSchema = z.object({
+  status: z
+    .enum([
+      "OPEN",
+      "IN_PROGRESS",
+      "RESOLVED",
+    ])
+    .optional(),
+
+  severity: z
+    .enum([
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL",
+    ])
+    .optional(),
+});
+
+export type IncidentFiltersInput = z.infer<
+  typeof incidentFiltersSchema
+>;

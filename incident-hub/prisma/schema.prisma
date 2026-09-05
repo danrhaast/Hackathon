@@ -31,6 +31,7 @@ model Incident {
   updatedAt   DateTime          @updatedAt
 
   history     IncidentHistory[]
+  comments IncidentComment[]
 
   @@index([status])
   @@index([severity])
@@ -51,4 +52,17 @@ model IncidentHistory {
 
   @@index([incidentId])
   @@index([changedAt])
+}
+
+model IncidentComment {
+  id        String   @id @default(uuid())
+  incidentId String
+  incident  Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  author    String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([incidentId])
+  @@index([createdAt])
 }

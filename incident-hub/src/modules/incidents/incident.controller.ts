@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
-import { createIncidentSchema } from "./incident.schema";
 import { IncidentService } from "./incident.service";
-import { updateIncidentStatusSchema } from "./incident.schema";
+import {
+    createIncidentSchema,
+    updateIncidentStatusSchema,
+    incidentFiltersSchema,
+  } from "./incident.schema";
 
 const incidentService = new IncidentService();
 
@@ -15,26 +18,12 @@ export class IncidentController {
     }
 
     async findAll(req: Request, res: Response) {
-        const status = req.query.status as
-            | "OPEN"
-            | "IN_PROGRESS"
-            | "RESOLVED"
-            | undefined;
-
-        const severity = req.query.severity as
-            | "LOW"
-            | "MEDIUM"
-            | "HIGH"
-            | "CRITICAL"
-            | undefined;
-
-        const incidents = await incidentService.findAll({
-            status,
-            severity,
-        });
-
+        const filters = incidentFiltersSchema.parse(req.query);
+      
+        const incidents = await incidentService.findAll(filters);
+      
         return res.status(200).json(incidents);
-    }
+      }
 
     async findById(req: Request, res: Response) {
         const { id } = req.params as { id: string };
