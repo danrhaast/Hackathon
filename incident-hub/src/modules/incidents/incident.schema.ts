@@ -20,3 +20,17 @@ export const createIncidentSchema = z.object({
 export type CreateIncidentInput = z.infer<
   typeof createIncidentSchema
 >;
+
+export const updateIncidentStatusSchema = z.object({
+  status: z.enum([
+    "OPEN",
+    "IN_PROGRESS",
+    "RESOLVED",
+  ]),
+
+  changedBy: z.string().min(1).optional(),
+});
+
+export type UpdateIncidentStatusInput = z.infer<
+  typeof updateIncidentStatusSchema
+>;

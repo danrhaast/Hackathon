@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createIncidentSchema = void 0;
+exports.updateIncidentStatusSchema = exports.createIncidentSchema = void 0;
 const zod_1 = require("zod");
 exports.createIncidentSchema = zod_1.z.object({
     title: zod_1.z
@@ -15,5 +15,13 @@ exports.createIncidentSchema = zod_1.z.object({
         "HIGH",
         "CRITICAL",
     ]),
+});
+exports.updateIncidentStatusSchema = zod_1.z.object({
+    status: zod_1.z.enum([
+        "OPEN",
+        "IN_PROGRESS",
+        "RESOLVED",
+    ]),
+    changedBy: zod_1.z.string().min(1).optional(),
 });
 //# sourceMappingURL=incident.schema.js.map

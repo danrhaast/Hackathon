@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IncidentController = void 0;
 const incident_schema_1 = require("./incident.schema");
 const incident_service_1 = require("./incident.service");
+const incident_schema_2 = require("./incident.schema");
 const incidentService = new incident_service_1.IncidentService();
 class IncidentController {
     async create(req, res) {
@@ -22,6 +23,12 @@ class IncidentController {
                 message: "Incident not found",
             });
         }
+        return res.status(200).json(incident);
+    }
+    async updateStatus(req, res) {
+        const { id } = req.params;
+        const data = incident_schema_2.updateIncidentStatusSchema.parse(req.body);
+        const incident = await incidentService.updateStatus(id, data.status, data.changedBy);
         return res.status(200).json(incident);
     }
 }

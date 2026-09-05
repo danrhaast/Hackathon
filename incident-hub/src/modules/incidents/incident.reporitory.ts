@@ -33,4 +33,33 @@ export class IncidentRepository {
       },
     });
   }
+
+  async updateStatus(
+    id: string,
+    previousStatus: "OPEN" | "IN_PROGRESS" | "RESOLVED",
+    newStatus: "OPEN" | "IN_PROGRESS" | "RESOLVED",
+    changedBy?: string
+  ) {
+    return prisma.$transaction(async (transaction) => {
+      const incident = await transaction.incident.update({
+        where: {
+          id,
+        },
+        data: {
+          status: newStatus,
+        },
+      });
+  
+      await transaction.incidentHistory.create({
+        data: {
+          incidentId: id,
+          previousStatus,
+          newStatus,
+          changedBy,
+        },
+      });
+  
+      return incident;
+    });
+  }
 }

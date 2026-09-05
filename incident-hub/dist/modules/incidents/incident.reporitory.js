@@ -29,6 +29,27 @@ class IncidentRepository {
             },
         });
     }
+    async updateStatus(id, previousStatus, newStatus, changedBy) {
+        return prisma_1.prisma.$transaction(async (transaction) => {
+            const incident = await transaction.incident.update({
+                where: {
+                    id,
+                },
+                data: {
+                    status: newStatus,
+                },
+            });
+            await transaction.incidentHistory.create({
+                data: {
+                    incidentId: id,
+                    previousStatus,
+                    newStatus,
+                    changedBy,
+                },
+            });
+            return incident;
+        });
+    }
 }
 exports.IncidentRepository = IncidentRepository;
 //# sourceMappingURL=incident.reporitory.js.map

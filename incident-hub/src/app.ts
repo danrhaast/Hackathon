@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 
 import { incidentRoutes } from "./modules/incidents/incident.routes";
+import { notFoundMiddleware } from "./middlewares/not-found.middleware";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 const app = express();
 
@@ -16,5 +18,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/incidents", incidentRoutes);
+
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 export { app };
