@@ -1,129 +1,192 @@
-# PLAN.md
+# PLAN.md — Incident Hub
 
-## 1. Entendimento
+## 1. Objetivo
 
-O problema é que os incidentes da operação são acompanhados de forma informal. Isso dificulta saber quais problemas estão acontecendo, quem é o responsável, qual a gravidade e em que situação cada incidente está.
+Criar um sistema para centralizar incidentes operacionais, permitindo registrar, acompanhar e resolver problemas em um único lugar.
 
-A ideia é criar o Incident Hub para centralizar essas informações em um único lugar.
-
-O sistema deve permitir criar, acompanhar e resolver incidentes, além de manter um histórico das mudanças de status.
+O foco principal do projeto é garantir as regras de negócio, persistência dos dados, histórico das ações e facilidade para consultar os incidentes.
 
 ---
 
-## 2. Escopo
+## 2. O que será desenvolvido
 
-### Obrigatório
+### Incidentes
 
-* Criar incidentes
-* Listar os incidentes
-* Filtrar por status e severidade
-* Ver os detalhes de um incidente
-* Alterar o status
-* Controlar a regra dos incidentes críticos
-* Salvar o histórico das mudanças de status
-* Mostrar um dashboard com os principais números
-* Manter os dados salvos
-* Criar alguns incidentes iniciais
-* Criar testes para as principais regras
+* Criar incidentes.
+* Listar incidentes.
+* Consultar detalhes.
+* Filtrar por status.
+* Filtrar por severidade.
+* Filtrar por status e severidade.
+* Alterar o status do incidente.
 
-### Desejável
+### Regra de incidentes críticos
 
-* Melhorar a aparência da aplicação
-* Melhorar as mensagens para o usuário
-* Pequenas melhorias de usabilidade
+Incidentes `CRITICAL` não podem passar diretamente de:
 
-### Fora do escopo
+```text
+OPEN → RESOLVED
+```
 
-* Login
-* Sistema de permissões
-* Multi-tenancy
-* Integrações externas
-* Funcionalidades muito complexas
+O fluxo obrigatório é:
 
----
+```text
+OPEN → IN_PROGRESS → RESOLVED
+```
 
-## 3. Decisões técnicas
+Essa regra será aplicada no backend.
 
-Vou utilizar uma estrutura simples para conseguir desenvolver, testar e corrigir o sistema rapidamente.
+### Histórico
 
-A aplicação terá uma separação entre:
+Toda alteração de status deve gerar um registro no histórico contendo:
 
-* Interface
-* Regras do sistema
-* Banco de dados
-* Testes
+* status anterior;
+* novo status;
+* responsável pela alteração;
+* data da alteração.
 
-Para a persistência, vou utilizar um banco local para que os dados continuem existindo mesmo depois de reiniciar a aplicação.
+### Dashboard
 
-As regras mais importantes ficarão no lado do servidor para evitar que uma regra seja burlada apenas pela interface.
+Criar um endpoint com informações resumidas dos incidentes:
 
----
-
-## 4. Desenvolvimento
-
-Vou desenvolver o projeto por partes, sempre testando o que foi feito antes de continuar.
-
-1. Criar a estrutura inicial
-2. Configurar o banco de dados
-3. Criar os incidentes
-4. Criar a tela de cadastro
-5. Criar a listagem e os filtros
-6. Criar a tela de detalhes
-7. Implementar a alteração de status
-8. Implementar a regra para incidentes críticos
-9. Criar o histórico
-10. Criar o dashboard
-11. Criar os testes
-12. Corrigir problemas encontrados
-13. Fazer a validação final
-14. Finalizar a documentação
+* total;
+* abertos;
+* em andamento;
+* resolvidos;
+* quantidade por severidade.
 
 ---
 
-## 5. Critérios de aceite
+## 3. Change Request — Comentários e Timeline
 
-Vou considerar o sistema funcionando quando:
+Durante o desenvolvimento foi solicitado um novo requisito:
 
-* Consigo criar um incidente.
-* Um novo incidente começa como `Open`.
-* Consigo visualizar e filtrar os incidentes.
-* Consigo abrir os detalhes de um incidente.
-* Consigo alterar o status.
-* Um incidente `Critical` não pode ir diretamente de `Open` para `Resolved`.
-* As alterações de status ficam registradas no histórico.
-* O dashboard apresenta os números corretos.
-* Os dados continuam salvos depois de reiniciar a aplicação.
-* As principais regras possuem testes.
+* permitir comentários nos incidentes;
+* permitir vários comentários por incidente;
+* registrar autor, conteúdo e data;
+* impedir comentários vazios;
+* manter os comentários persistidos;
+* criar uma timeline única de atividades.
+
+A timeline deve juntar:
+
+* alterações de status;
+* comentários.
+
+Os eventos devem aparecer em ordem cronológica.
+
+### Decisão técnica
+
+Não será criada uma tabela específica para timeline.
+
+Os comentários e alterações de status continuarão sendo armazenados separadamente:
+
+```text
+IncidentComment
+IncidentHistory
+```
+
+A aplicação combina os dois registros na camada de serviço para montar a timeline.
+
+Essa decisão evita duplicação de dados e mantém cada tipo de informação com sua responsabilidade.
 
 ---
 
-## 6. Riscos
+## 4. Ordem de desenvolvimento
 
-Os principais riscos que vejo são:
+A implementação foi dividida da seguinte forma:
 
-* Gastar tempo criando coisas que não são necessárias.
-* A IA gerar código incorreto.
-* Criar uma estrutura muito complexa.
-* Deixar os testes para o final.
-* Ter problemas na integração entre as partes.
-
-Para evitar isso, vou trabalhar em pequenas etapas e validar cada parte antes de seguir.
+1. Configuração do projeto.
+2. Configuração do PostgreSQL e Prisma.
+3. Criação do modelo de incidentes.
+4. Criação da API de incidentes.
+5. Implementação dos filtros.
+6. Implementação das regras de status.
+7. Implementação do histórico.
+8. Implementação do dashboard.
+9. Implementação dos comentários.
+10. Implementação da timeline.
+11. Criação dos testes automatizados.
+12. Seed do banco.
+13. Documentação.
+14. Revisão final e entrega.
 
 ---
 
-## 7. Estratégia de IA
+## 5. Testes
 
-Vou utilizar a IA durante todo o desenvolvimento para criar código, testes, configurações e ajudar na investigação de problemas.
+Os testes devem validar principalmente as regras de negócio e não apenas os endpoints.
 
-Minha estratégia será:
+Serão testados:
 
-1. Explicar o problema para a IA.
-2. Passar uma tarefa pequena por vez.
-3. Pedir para a IA implementar.
-4. Executar a aplicação.
-5. Testar o que foi feito.
-6. Se houver erro, investigar com a IA.
-7. Corrigir e testar novamente.
-8. Só depois continuar para a próxima etapa.
+* criação de incidentes;
+* validação dos dados;
+* listagem;
+* filtros;
+* alteração de status;
+* regra de incidentes críticos;
+* histórico;
+* dashboard;
+* criação de comentários;
+* validação de comentários;
+* persistência dos comentários;
+* timeline;
+* ordem cronológica da timeline.
 
-Não vou assumir que o código gerado pela IA está correto. A aplicação será executada e testada durante o desenvolvimento.
+A suíte atual possui **20 testes automatizados**.
+
+---
+
+## 6. Critérios de aceitação
+
+O projeto será considerado funcional quando:
+
+* for possível criar um incidente;
+* os incidentes forem persistidos no PostgreSQL;
+* for possível consultar e filtrar incidentes;
+* a regra de incidentes críticos for respeitada;
+* as alterações de status forem registradas;
+* o dashboard apresentar os dados corretamente;
+* for possível adicionar vários comentários;
+* comentários vazios forem rejeitados;
+* comentários permanecerem persistidos;
+* a timeline reunir comentários e alterações de status;
+* a timeline estiver em ordem cronológica;
+* os testes automatizados passarem;
+* o projeto compilar sem erros.
+
+---
+
+## 7. Riscos e cuidados
+
+### Regra de status
+
+Existe risco de permitir uma transição de status inválida.
+
+**Tratamento:** concentrar a regra na camada de serviço e testar o fluxo crítico.
+
+### Persistência
+
+Os dados precisam continuar disponíveis após reiniciar a aplicação.
+
+**Tratamento:** utilizar PostgreSQL com Prisma.
+
+### Timeline
+
+Existe risco de duplicar informações ou criar inconsistência entre histórico e comentários.
+
+**Tratamento:** manter as entidades separadas e montar a timeline a partir dos registros existentes.
+
+### Validação
+
+Dados inválidos podem comprometer o funcionamento da API.
+
+**Tratamento:** utilizar Zod para validar as entradas.
+
+---
+
+## 8. Resultado esperado
+
+Ao final, o Incident Hub deverá permitir que uma equipe registre um incidente, acompanhe sua evolução, registre comentários e consulte todo o histórico de atividades em uma única timeline.
+
+O backend será a parte principal do sistema, com foco em regras de negócio, persistência, rastreabilidade e testes.
