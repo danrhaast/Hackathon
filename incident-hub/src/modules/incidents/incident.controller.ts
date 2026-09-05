@@ -16,25 +16,25 @@ export class IncidentController {
 
     async findAll(req: Request, res: Response) {
         const status = req.query.status as
-          | "OPEN"
-          | "IN_PROGRESS"
-          | "RESOLVED"
-          | undefined;
-      
+            | "OPEN"
+            | "IN_PROGRESS"
+            | "RESOLVED"
+            | undefined;
+
         const severity = req.query.severity as
-          | "LOW"
-          | "MEDIUM"
-          | "HIGH"
-          | "CRITICAL"
-          | undefined;
-      
+            | "LOW"
+            | "MEDIUM"
+            | "HIGH"
+            | "CRITICAL"
+            | undefined;
+
         const incidents = await incidentService.findAll({
-          status,
-          severity,
+            status,
+            severity,
         });
-      
+
         return res.status(200).json(incidents);
-      }
+    }
 
     async findById(req: Request, res: Response) {
         const { id } = req.params as { id: string };
@@ -51,15 +51,21 @@ export class IncidentController {
 
     async updateStatus(req: Request, res: Response) {
         const { id } = req.params as { id: string };
-      
+
         const data = updateIncidentStatusSchema.parse(req.body);
-      
+
         const incident = await incidentService.updateStatus(
-          id,
-          data.status,
-          data.changedBy
+            id,
+            data.status,
+            data.changedBy
         );
-      
+
         return res.status(200).json(incident);
-      }
+    }
+
+    async getDashboard(_req: Request, res: Response) {
+        const dashboard = await incidentService.getDashboard();
+
+        return res.status(200).json(dashboard);
+    }
 }

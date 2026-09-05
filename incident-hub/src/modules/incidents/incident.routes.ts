@@ -16,6 +16,11 @@ incidentRoutes.get(
 );
 
 incidentRoutes.get(
+    "/dashboard",
+    incidentController.getDashboard.bind(incidentController)
+  );
+
+incidentRoutes.get(
     "/:id",
     incidentController.findById.bind(incidentController)
 );

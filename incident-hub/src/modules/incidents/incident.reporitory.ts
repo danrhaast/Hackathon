@@ -56,7 +56,7 @@ export class IncidentRepository {
           status: newStatus,
         },
       });
-  
+
       await transaction.incidentHistory.create({
         data: {
           incidentId: id,
@@ -65,8 +65,76 @@ export class IncidentRepository {
           changedBy,
         },
       });
-  
+
       return incident;
     });
+  }
+
+  async getDashboard() {
+    const [
+      total,
+      open,
+      inProgress,
+      resolved,
+      critical,
+      high,
+      medium,
+      low,
+    ] = await Promise.all([
+      prisma.incident.count(),
+
+      prisma.incident.count({
+        where: {
+          status: "OPEN",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          status: "IN_PROGRESS",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          status: "RESOLVED",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          severity: "CRITICAL",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          severity: "HIGH",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          severity: "MEDIUM",
+        },
+      }),
+
+      prisma.incident.count({
+        where: {
+          severity: "LOW",
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      open,
+      inProgress,
+      resolved,
+      critical,
+      high,
+      medium,
+      low,
+    };
   }
 }

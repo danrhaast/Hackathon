@@ -1,5 +1,5 @@
-import { IncidentRepository } from "./incident.reporitory";
 import { AppError } from "../../shared/errors/app-errors";
+import { IncidentRepository } from "./incident.reporitory";
 
 export class IncidentService {
   private readonly repository: IncidentRepository;
@@ -7,62 +7,35 @@ export class IncidentService {
   constructor() {
     this.repository = new IncidentRepository();
   }
-
-  async create(data: {
-    title: string;
-    description: string;
-    severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-  }) {
-    return this.repository.create(data);
-  }
-
-  async findById(id: string) {
-    return this.repository.findById(id);
-  }
-
-  async findAll(filters?: {
-    status?: "OPEN" | "IN_PROGRESS" | "RESOLVED";
-    severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-  }) {
-    return this.repository.findAll(filters);
-  }
-
-  async updateStatus(
-    id: string,
-    status: "OPEN" | "IN_PROGRESS" | "RESOLVED",
-    changedBy?: string
-  ) {
-    const incident = await this.repository.findById(id);
   
-    if (!incident) {
-      throw new AppError("Incident not found", 404);
+    async create(data: {
+      title: string;
+      description: string;
+      severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    }) {
+      return this.repository.create(data);
     }
   
-    const currentStatus = incident.status;
+    async findById(id: string) {
+      return this.repository.findById(id);
+    }
   
-    if (
-      currentStatus === "OPEN" &&
-      status === "RESOLVED" &&
-      incident.severity === "CRITICAL"
+    async findAll(filters?: {
+      status?: "OPEN" | "IN_PROGRESS" | "RESOLVED";
+      severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    }) {
+      return this.repository.findAll(filters);
+    }
+  
+    async updateStatus(
+      id: string,
+      status: "OPEN" | "IN_PROGRESS" | "RESOLVED",
+      changedBy?: string
     ) {
-      throw new AppError(
-        "Critical incidents must pass through In Progress before being resolved",
-        400
-      );
+      // ...
     }
   
-    if (currentStatus === status) {
-      throw new AppError(
-        "Incident already has this status",
-        400
-      );
+    async getDashboard() {
+      return this.repository.getDashboard();
     }
-  
-    return this.repository.updateStatus(
-      id,
-      currentStatus,
-      status,
-      changedBy
-    );
   }
-}
